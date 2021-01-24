@@ -5,11 +5,14 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  OneToMany,
 } from "typeorm";
 import { User } from "./user";
 import { WorkoutDifficulty } from "./workoutDifficulty";
 import { WorkoutType } from "./workoutType";
 import { WorkoutDuration } from "./workoutDuration";
+import { Like } from "./like";
+import { Favorite } from "./favorite";
 
 @Entity()
 export class Workout {
@@ -33,6 +36,21 @@ export class Workout {
 
   @Column("text")
   blocks: string;
+
+  @Column("int")
+  finishes: number;
+
+  @Column("int")
+  likes: number;
+
+  @Column("int")
+  views: number;
+
+  @OneToMany(() => Like, (like) => like.workout)
+  likeList: Like[];
+
+  @OneToMany(() => Favorite, (favorite) => favorite.workout)
+  favoriteList: Favorite[];
 
   @CreateDateColumn()
   createdAt: Date;

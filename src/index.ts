@@ -4,7 +4,6 @@ import dotenv from "dotenv";
 import express from "express";
 import cookieParser from "cookie-parser";
 import session from "express-session";
-import redis from "redis";
 import connectRedis from "connect-redis";
 import cors from "cors";
 import bodyParser from "body-parser";
@@ -15,6 +14,10 @@ import { Workout } from "./entities/workout";
 import { WorkoutDifficulty } from "./entities/workoutDifficulty";
 import { WorkoutDuration } from "./entities/workoutDuration";
 import { WorkoutType } from "./entities/workoutType";
+import { redis } from "./redisClient";
+import { Like } from "./entities/like";
+import { Favorite } from "./entities/favorite";
+import { Exercise } from "./entities/exercise";
 
 declare module "express-session" {
   export interface SessionData {
@@ -33,7 +36,16 @@ const main = async () => {
     database: process.env.DB_NAME,
     port: 3306,
     synchronize: true,
-    entities: [User, Workout, WorkoutDifficulty, WorkoutType, WorkoutDuration],
+    entities: [
+      User,
+      Workout,
+      WorkoutDifficulty,
+      WorkoutType,
+      WorkoutDuration,
+      Like,
+      Favorite,
+      Exercise,
+    ],
     migrations: ["./migrations/*.[tj]s"],
   });
 
@@ -51,22 +63,13 @@ const main = async () => {
   );
 
   const RedisStore = connectRedis(session);
-  const redisClient = redis.createClient({
-    host: "localhost",
-    port: 6379,
-  });
-  redisClient.on("error", function (err) {
-    console.log("Could not establish a connection with redis. ", err);
-  });
-  redisClient.on("connect", function (err) {
-    console.log("Connected to redis successfully");
-  });
+
   app.use(
     session({
       name: COOKIE_NAME,
       saveUninitialized: false,
       store: new RedisStore({
-        client: redisClient,
+        client: redis,
         disableTouch: true,
       }),
       cookie: {

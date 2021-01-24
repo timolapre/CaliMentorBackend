@@ -1,8 +1,12 @@
 import { getRepository } from "typeorm";
 import bcrypt from "bcrypt";
+import { v4 as uuid } from "uuid";
 import { Request, Response } from "express";
 import { User } from "../../entities/user";
-import { COOKIE_NAME } from "../../constants";
+import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from "../../constants";
+import { sendEmail } from "../../util/sendEmail";
+import { redis } from "../../redisClient";
+import { isAuthenticated } from "../../util/authentication";
 
 const userRouter = require("express").Router();
 
@@ -14,15 +18,74 @@ class UserResponse {
   user?: User;
 }
 
+// count
+async function getCount(): Promise<string> {
+  const count = await userRepo.count();
+  return count.toString();
+}
+userRouter.get("/count", async (req, res) => {
+  res.send(await getCount());
+});
+
 // me
 userRouter.get("/me", async (req: Request, res: Response) => {
-  if (!req.session.userId) {
-    return res.send(null);
-  }
+  const meUser = await userRepo
+    .createQueryBuilder("u")
+    .addSelect("u.email")
+    .where("u.id = :id", { id: req.session.userId })
+    .getOne();
 
-  const meUser = await userRepo.findOne(req.session.userId);
   res.send(meUser);
 });
+
+// update account info
+async function updateMe(req): Promise<UserResponse> {
+  const { username, email } = req.body.user;
+
+  if (!username || username.length <= 2) {
+    return {
+      errors: {
+        username: "length should be greater than 2",
+      },
+    };
+  }
+
+  if (!email || !email.includes("@")) {
+    return {
+      errors: {
+        email: "should be an email",
+      },
+    };
+  }
+
+  const checkUsername = await userRepo.findOne({ username });
+  if (checkUsername) {
+    return {
+      errors: {
+        username: "username already taken",
+      },
+    };
+  }
+
+  const meUser = await userRepo
+    .createQueryBuilder("u")
+    .addSelect("u.email")
+    .where("u.id = :id", { id: req.session.userId })
+    .getOne();
+
+  meUser.username = username;
+  meUser.email = email;
+
+  const user = await userRepo.save(meUser);
+  return { user };
+}
+userRouter.post(
+  "/me/update",
+  isAuthenticated,
+  async (req: Request, res: Response) => {
+    res.send(await updateMe(req));
+  }
+);
 
 // register
 async function postRegister(req): Promise<UserResponse> {
@@ -106,10 +169,10 @@ async function postLogin(req): Promise<UserResponse> {
     .where("user.username = :username", { username: username.toLowerCase() })
     .getOne();
 
-  if (!user) {
+  if (!user || !password) {
     return {
       errors: {
-        username: "username doesn't exist",
+        all: "Login failed",
       },
     };
   }
@@ -119,7 +182,7 @@ async function postLogin(req): Promise<UserResponse> {
   if (!valid) {
     return {
       errors: {
-        password: "incorrect password",
+        all: "Login failed",
       },
     };
   }
@@ -145,6 +208,117 @@ userRouter.get("/logout", async (req: Request, res: Response) => {
       })
     )
   );
+});
+
+// forgot password
+async function forgotPassword(req): Promise<boolean> {
+  const { email } = req.body;
+  const user = await userRepo.findOne({ email });
+  if (!user) {
+    return true;
+  }
+
+  const token = uuid();
+
+  await redis.set(
+    FORGOT_PASSWORD_PREFIX + token,
+    user.id,
+    "ex",
+    1000 * 60 * 60 * 24 // 1 day
+  );
+
+  const html = `<a href="http://localhost:3000/resetpassword/${token}">Reset password</>`;
+  await sendEmail(email, html);
+
+  return true;
+}
+userRouter.post("/forgotpassword", async (req: Request, res: Response) => {
+  res.send(await forgotPassword(req));
+});
+
+// reset password
+async function resetPassword(req): Promise<UserResponse> {
+  const { password, repeatPassword, token } = req.body;
+
+  if (!password || password.length <= 3 || password.indexOf(" ") >= 0) {
+    return {
+      errors: {
+        password: "length should be greater than 3 with no spaces",
+      },
+    };
+  }
+
+  if (!repeatPassword || repeatPassword !== password) {
+    return {
+      errors: {
+        repeatPassword: "passwords do not match",
+      },
+    };
+  }
+
+  const id = await redis.get(FORGOT_PASSWORD_PREFIX + token);
+  if (!id) {
+    return {
+      errors: {
+        invalid: "token not valid",
+      },
+    };
+  }
+  await redis.del(FORGOT_PASSWORD_PREFIX + token);
+  let user = await userRepo.findOne(id);
+  const hashedPassword = await bcrypt.hash(password, 10);
+  user.password = hashedPassword;
+  user = await userRepo.save(user);
+
+  return { user };
+}
+userRouter.post("/resetpassword", async (req: Request, res: Response) => {
+  res.send(await resetPassword(req));
+});
+
+// change password
+async function changepassword(req): Promise<UserResponse> {
+  const { password, repeatPassword } = req.body;
+
+  if (!password || password.length <= 3 || password.indexOf(" ") >= 0) {
+    return {
+      errors: {
+        password: "length should be greater than 3 with no spaces",
+      },
+    };
+  }
+
+  if (!repeatPassword || repeatPassword !== password) {
+    return {
+      errors: {
+        repeatPassword: "passwords do not match",
+      },
+    };
+  }
+
+  const meUser = await userRepo
+    .createQueryBuilder("u")
+    .where("u.id = :id", { id: req.session.userId })
+    .getOne();
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  meUser.password = hashedPassword;
+  const user = await userRepo.save(meUser);
+
+  return { user };
+}
+userRouter.post(
+  "/me/changepassword",
+  isAuthenticated,
+  async (req: Request, res: Response) => {
+    res.send(await changepassword(req));
+  }
+);
+
+// Google authentication
+async function authGoogle(req): Promise<UserResponse> {}
+userRouter.post("/auth/google", async (req: Request, res: Response) => {
+  res.send(await authGoogle(req));
 });
 
 module.exports = userRouter;

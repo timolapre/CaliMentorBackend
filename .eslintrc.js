@@ -33,6 +33,8 @@ module.exports = {
     "max-classes-per-file": "off",
     "consistent-return": "off",
     "spaced-comment": 'off',
-    "global-require": 'off'
+    "global-require": 'off',
+    "no-plusplus": 'off',
+    "no-restricted-syntax": 'off'
   },
 };
