@@ -55,6 +55,6 @@ export class User {
   @OneToMany(() => Favorite, (favorite) => favorite.user)
   favoriteList: Favorite[];
 
-  @OneToMany(() => PersonalRecord, (PersonalRecord) => PersonalRecord.user)
+  @OneToMany(() => PersonalRecord, (pr) => pr.user)
   personalRecords: PersonalRecord[];
 }
