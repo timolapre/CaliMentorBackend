@@ -18,6 +18,7 @@ import { redis } from "./redisClient";
 import { Like } from "./entities/like";
 import { Favorite } from "./entities/favorite";
 import { Exercise } from "./entities/exercise";
+import { PersonalRecord } from "./entities/PersonalRecord";
 
 declare module "express-session" {
   export interface SessionData {
@@ -45,6 +46,7 @@ const main = async () => {
       Like,
       Favorite,
       Exercise,
+      PersonalRecord,
     ],
     migrations: ["./migrations/*.[tj]s"],
   });

@@ -316,7 +316,9 @@ userRouter.post(
 );
 
 // Google authentication
-async function authGoogle(req): Promise<UserResponse> {}
+async function authGoogle(req) {
+  return "";
+}
 userRouter.post("/auth/google", async (req: Request, res: Response) => {
   res.send(await authGoogle(req));
 });

@@ -9,6 +9,7 @@ import {
 import { Workout } from "./workout";
 import { Like } from "./like";
 import { Favorite } from "./favorite";
+import { PersonalRecord } from "./PersonalRecord";
 
 @Entity()
 export class User {
@@ -53,4 +54,7 @@ export class User {
 
   @OneToMany(() => Favorite, (favorite) => favorite.user)
   favoriteList: Favorite[];
+
+  @OneToMany(() => PersonalRecord, (PersonalRecord) => PersonalRecord.user)
+  personalRecords: PersonalRecord[];
 }
