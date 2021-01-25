@@ -19,7 +19,7 @@ export class PersonalRecord {
   @Column("integer", { nullable: false, default: 0 })
   count: number;
 
-  @Column("text", { default: "x", nullable: true })
+  @Column("text", { nullable: true })
   append: string;
 
   @CreateDateColumn()
