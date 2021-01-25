@@ -19,7 +19,12 @@ export class User {
   @Column("varchar", { unique: true, length: 128 })
   username: string;
 
-  @Column("varchar", { select: false, length: 512 })
+  @Column("varchar", {
+    select: false,
+    length: 512,
+    nullable: true,
+    default: null,
+  })
   password: string;
 
   @Column("varchar", { select: false, length: 128 })
