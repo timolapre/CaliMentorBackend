@@ -9,7 +9,7 @@ import {
 import { Workout } from "./workout";
 import { Like } from "./like";
 import { Favorite } from "./favorite";
-import { PersonalRecord } from "./PersonalRecord";
+import { PersonalRecord } from "./personalRecord";
 
 @Entity()
 export class User {

@@ -18,7 +18,7 @@ import { redis } from "./redisClient";
 import { Like } from "./entities/like";
 import { Favorite } from "./entities/favorite";
 import { Exercise } from "./entities/exercise";
-import { PersonalRecord } from "./entities/PersonalRecord";
+import { PersonalRecord } from "./entities/personalRecord";
 
 declare module "express-session" {
   export interface SessionData {

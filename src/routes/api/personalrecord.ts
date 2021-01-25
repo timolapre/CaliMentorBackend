@@ -1,7 +1,7 @@
 import { getRepository } from "typeorm";
 import { User } from "../../entities/user";
 import { isAuthenticated } from "../../util/authentication";
-import { PersonalRecord } from "../../entities/PersonalRecord";
+import { PersonalRecord } from "../../entities/personalRecord";
 
 const personalRecordRouter = require("express").Router();
 
