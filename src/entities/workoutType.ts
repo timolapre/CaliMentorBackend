@@ -6,7 +6,7 @@ export class WorkoutType {
   @PrimaryGeneratedColumn("increment")
   id: string;
 
-  @Column("text")
+  @Column("varchar", { length: 128 })
   text: string;
 
   @OneToMany(() => Workout, (workout) => workout.type)

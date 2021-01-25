@@ -19,10 +19,10 @@ export class Workout {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column("text")
+  @Column("varchar", { length: 128 })
   name: string;
 
-  @Column("text")
+  @Column("varchar", { length: 1024 })
   description: string;
 
   @ManyToOne(() => WorkoutType, (type) => type.workouts)
@@ -34,7 +34,7 @@ export class Workout {
   @ManyToOne(() => WorkoutDuration, (difficulty) => difficulty.workouts)
   duration: WorkoutDuration;
 
-  @Column("text")
+  @Column("longtext")
   blocks: string;
 
   @Column("int")

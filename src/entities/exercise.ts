@@ -11,7 +11,7 @@ export class Exercise {
   @PrimaryGeneratedColumn("increment")
   id: string;
 
-  @Column("text", { unique: true })
+  @Column("varchar", { length: 128, unique: true })
   name: string;
 
   @Column("bool", { nullable: false, default: 0 })

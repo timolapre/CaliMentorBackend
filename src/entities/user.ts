@@ -16,13 +16,13 @@ export class User {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column("text", { unique: true })
+  @Column("varchar", { unique: true, length: 128 })
   username: string;
 
-  @Column("text", { select: false })
+  @Column("varchar", { select: false, length: 512 })
   password: string;
 
-  @Column("text", { select: false })
+  @Column("varchar", { select: false, length: 128 })
   email: string;
 
   @Column("enum", {
@@ -31,13 +31,28 @@ export class User {
   })
   type: "free" | "premium" | "gifted_premium";
 
-  @Column("text", { select: false, default: null, nullable: true })
+  @Column("varchar", {
+    length: 1024,
+    select: false,
+    default: null,
+    nullable: true,
+  })
   accessToken: string;
 
-  @Column("text", { select: false, default: null, nullable: true })
+  @Column("varchar", {
+    length: 1024,
+    select: false,
+    default: null,
+    nullable: true,
+  })
   refreshToken: string;
 
-  @Column("text", { select: false, default: null, nullable: true })
+  @Column("varchar", {
+    length: 1024,
+    select: false,
+    default: null,
+    nullable: true,
+  })
   googleId: string;
 
   @CreateDateColumn()

@@ -13,13 +13,13 @@ export class PersonalRecord {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column("text", { nullable: false })
+  @Column("varchar", { length: 128, nullable: false })
   exercise: string;
 
   @Column("integer", { nullable: false, default: 0 })
   count: number;
 
-  @Column("text", { nullable: true })
+  @Column("varchar", { length: 4, nullable: true })
   append: string;
 
   @CreateDateColumn()
