@@ -156,22 +156,27 @@ async function create(req): Promise<string> {
   workout.blocks = JSON.stringify(body.workout.blocks);
   workout.user = req.session.userId;
   const success = await workoutRepo.save(workout);
+  console.log("workout", success);
 
   const newExercises = [];
   for await (const block of body.workout?.blocks) {
     for await (const exercise of block.exercises) {
+      console.log("exercise", exercise);
       const { name } = exercise;
       const exercsieExists = await exerciseRepo.findOne({ name });
 
       if (!exercsieExists && !newExercises.some((el) => el.name === name)) {
         const newExercise = new Exercise();
         newExercise.name = name;
+        console.log("new exercise ", newExercises);
         newExercises.push(newExercise);
       }
     }
   }
+  console.log("saving new exercises");
   await exerciseRepo.save(newExercises);
 
+  console.log("gonna return now ", success.id);
   return success.id || null;
 }
 workoutRouter.post("/create", isAuthenticated, async (req, res) => {
