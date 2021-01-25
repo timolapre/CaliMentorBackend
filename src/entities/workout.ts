@@ -37,13 +37,13 @@ export class Workout {
   @Column("longtext")
   blocks: string;
 
-  @Column("int")
+  @Column("int", { default: 0 })
   finishes: number;
 
-  @Column("int")
+  @Column("int", { default: 0 })
   likes: number;
 
-  @Column("int")
+  @Column("int", { default: 0 })
   views: number;
 
   @OneToMany(() => Like, (like) => like.workout)

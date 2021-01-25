@@ -3,7 +3,7 @@ import { google } from "googleapis";
 const googleConfig = {
   clientId: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  redirect: "http://localhost:8080/api/google/redirect",
+  redirect: process.env.GOOGLE_SERVER_REDIRECT,
 };
 
 function createConnection() {
