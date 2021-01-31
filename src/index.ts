@@ -19,6 +19,7 @@ import { Like } from "./entities/like";
 import { Favorite } from "./entities/favorite";
 import { Exercise } from "./entities/exercise";
 import { PersonalRecord } from "./entities/personalRecord";
+import { WorkoutHistory } from "./entities/workoutHistory";
 
 declare module "express-session" {
   export interface SessionData {
@@ -47,6 +48,7 @@ const main = async () => {
       Favorite,
       Exercise,
       PersonalRecord,
+      WorkoutHistory,
     ],
     migrations: ["./migrations/*.[tj]s"],
   });

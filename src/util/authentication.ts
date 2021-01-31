@@ -9,7 +9,7 @@ export async function isAdmin(req, res, next) {
   }
 
   const user = await userRepo.findOne(req.session.userId);
-  if (user.username !== "timo") {
+  if (user.username.toLocaleLowerCase() !== "timo") {
     return res.sendStatus(401);
   }
   return next();

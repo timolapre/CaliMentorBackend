@@ -13,6 +13,7 @@ import { WorkoutType } from "./workoutType";
 import { WorkoutDuration } from "./workoutDuration";
 import { Like } from "./like";
 import { Favorite } from "./favorite";
+import { WorkoutHistory } from "./workoutHistory";
 
 @Entity()
 export class Workout {
@@ -51,6 +52,9 @@ export class Workout {
 
   @OneToMany(() => Favorite, (favorite) => favorite.workout)
   favoriteList: Favorite[];
+
+  @OneToMany(() => WorkoutHistory, (history) => history.workout)
+  WorkoutHistory: WorkoutHistory[];
 
   @CreateDateColumn()
   createdAt: Date;

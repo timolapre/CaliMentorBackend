@@ -8,10 +8,12 @@ import { User } from "../../entities/user";
 import { Like } from "../../entities/like";
 import { Favorite } from "../../entities/favorite";
 import { Exercise } from "../../entities/exercise";
+import { WorkoutHistory } from "../../entities/workoutHistory";
 
 const workoutRouter = require("express").Router();
 
 const workoutRepo = getRepository(Workout);
+const workoutHistory = getRepository(WorkoutHistory);
 const exerciseRepo = getRepository(Exercise);
 const likeRepo = getRepository(Like);
 const favoriteRepo = getRepository(Favorite);
@@ -122,9 +124,9 @@ async function getSearch(req): Promise<[Workout[], number]> {
   }
 
   if (filters.top === "likes" || !filters.top) {
-    qb.orderBy("w.likes", "DESC").orderBy("w.createdAt", "DESC");
+    qb.orderBy("w.createdAt", "DESC").orderBy("w.likes", "DESC");
   } else if (filters.top === "finishes") {
-    qb.orderBy("w.finishes", "DESC").orderBy("w.createdAt", "DESC");
+    qb.orderBy("w.createdAt", "DESC").orderBy("w.finishes", "DESC");
   } else if (filters.top === "new") {
     qb.orderBy("w.createdAt", "DESC");
   }
@@ -163,7 +165,11 @@ async function create(req): Promise<string> {
       const { name } = exercise;
       const exercsieExists = await exerciseRepo.findOne({ name });
 
-      if (!exercsieExists && !newExercises.some((el) => el.name === name)) {
+      if (
+        name &&
+        !exercsieExists &&
+        !newExercises.some((el) => el.name === name)
+      ) {
         const newExercise = new Exercise();
         newExercise.name = name;
         newExercises.push(newExercise);
@@ -171,9 +177,10 @@ async function create(req): Promise<string> {
     }
   }
   try {
+    console.log(newExercises);
     await exerciseRepo.save(newExercises);
   } catch (e) {
-    console.log(e);
+    console.log("error");
   }
 
   return success.id || null;
@@ -228,6 +235,21 @@ workoutRouter.post("/delete", isAuthenticated, async (req, res) => {
 });
 
 // get like or dislike
+async function getUserHistory(req): Promise<WorkoutHistory[]> {
+  const workouts = await workoutHistory.find({
+    where: {
+      user: req.session.userId,
+    },
+    relations: ["workout"],
+    order: { createdAt: "DESC" },
+  });
+  return workouts;
+}
+workoutRouter.get("/history", isAuthenticated, async (req, res) => {
+  res.send(await getUserHistory(req));
+});
+
+// get like or dislike
 async function getLikeWorkout(req): Promise<string> {
   const { body } = req;
 
@@ -245,7 +267,7 @@ workoutRouter.post("/getlike", isAuthenticated, async (req, res) => {
 });
 
 // like or dislike
-async function likeWorkout(req): Promise<Boolean> {
+async function likeWorkout(req): Promise<string> {
   const { body } = req;
 
   const workout = await workoutRepo.findOne({ id: body.id });
@@ -265,13 +287,14 @@ async function likeWorkout(req): Promise<Boolean> {
     likeRepo.save(like);
     workoutRepo.save(workout);
   } else {
+    if (likeFound.value !== value) {
+      workout.likes += value * 2;
+    }
     likeFound.value = value;
-    workout.likes += value * 2;
     likeRepo.save(likeFound);
     workoutRepo.save(workout);
   }
-
-  return true;
+  return workout.likes.toString();
 }
 workoutRouter.post("/like", isAuthenticated, async (req, res) => {
   res.send(await likeWorkout(req));
@@ -336,10 +359,16 @@ workoutRouter.post("/view", async (req, res) => {
 
 // finish
 async function finishWorkout(req, res): Promise<Boolean> {
-  const { body } = req;
-  const workout = await workoutRepo.findOne({ id: body.id });
+  const { id } = req.body;
+  const workout = await workoutRepo.findOne({ id });
   workout.finishes += 1;
-  workoutRepo.save(workout);
+  await workoutRepo.save(workout);
+
+  const history = new WorkoutHistory();
+  history.user = req.session.userId;
+  history.workout = id;
+  await workoutHistory.save(history);
+
   return true;
 }
 workoutRouter.post("/finish", async (req, res) => {

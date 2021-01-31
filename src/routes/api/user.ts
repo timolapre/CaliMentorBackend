@@ -59,7 +59,7 @@ async function updateMe(req): Promise<UserResponse> {
   }
 
   const checkUsername = await userRepo.findOne({ username });
-  if (checkUsername) {
+  if (checkUsername && checkUsername.id !== req.session.userId) {
     return {
       errors: {
         username: "username already taken",

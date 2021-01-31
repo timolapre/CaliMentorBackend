@@ -10,6 +10,7 @@ import { Workout } from "./workout";
 import { Like } from "./like";
 import { Favorite } from "./favorite";
 import { PersonalRecord } from "./personalRecord";
+import { WorkoutHistory } from "./workoutHistory";
 
 @Entity()
 export class User {
@@ -68,6 +69,9 @@ export class User {
 
   @OneToMany(() => Workout, (workout) => workout.user)
   workouts: Workout[];
+
+  @OneToMany(() => WorkoutHistory, (history) => history.user)
+  WorkoutHistory: WorkoutHistory[];
 
   @OneToMany(() => Like, (like) => like.user)
   likeList: Like[];
