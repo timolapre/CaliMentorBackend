@@ -35,6 +35,13 @@ export async function isPremium(req, res, next) {
   }
 
   const user = await userRepo.findOne(req.session.userId);
+
+  if (user.premiumExpireDate < new Date()) {
+    user.type = "expired";
+    userRepo.save(user);
+    return res.sendStatus(401);
+  }
+
   if (user.type === "free") {
     return res.sendStatus(401);
   }

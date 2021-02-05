@@ -32,10 +32,23 @@ export class User {
   email: string;
 
   @Column("enum", {
-    enum: ["free", "premium", "gifted_premium"],
+    enum: ["free", "premium", "gifted_premium", "expired", "canceled"],
     default: "free",
   })
-  type: "free" | "premium" | "gifted_premium";
+  type: "free" | "premium" | "gifted_premium" | "expired" | "canceled";
+
+  @Column("date", { nullable: true, default: null })
+  premiumExpireDate: Date;
+
+  @Column("enum", { enum: ["None", "Subscription", "Single"], default: "None" })
+  paymentMethod: "None" | "Subscription" | "Single";
+
+  @Column("varchar", {
+    select: false,
+    length: 128,
+    default: null,
+  })
+  stripeCustomerId: string;
 
   @Column("varchar", {
     length: 1024,

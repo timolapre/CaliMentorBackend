@@ -20,6 +20,7 @@ import { Favorite } from "./entities/favorite";
 import { Exercise } from "./entities/exercise";
 import { PersonalRecord } from "./entities/personalRecord";
 import { WorkoutHistory } from "./entities/workoutHistory";
+import { startCronJobs } from "./util/cronJobs";
 
 declare module "express-session" {
   export interface SessionData {
@@ -89,6 +90,8 @@ const main = async () => {
 
   const apiRouter = require("./routes/api");
   app.use("/api", apiRouter);
+
+  startCronJobs(connection);
 
   app.listen(8080, () => {
     console.log("Server started listening on localhost:8080");

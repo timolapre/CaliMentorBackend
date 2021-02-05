@@ -234,18 +234,32 @@ workoutRouter.post("/delete", isAuthenticated, async (req, res) => {
   res.send(await deleteWorkout(req, res));
 });
 
-// get like or dislike
+// get workout history of user
 async function getUserHistory(req): Promise<WorkoutHistory[]> {
-  const workouts = await workoutHistory.find({
-    where: {
-      user: req.session.userId,
-    },
-    relations: ["workout"],
-    order: { createdAt: "DESC" },
-  });
+  // const workouts = await workoutHistory.find({
+  //   where: {
+  //     user: req.session.userId,
+  //   },
+  //   relations: ["workout"],
+  //   order: { createdAt: "DESC" },
+  // });
+
+  const date = req.body.date.split("-");
+  const year = date[0];
+  const month = date[1];
+  
+
+  const workouts = await workoutHistory
+    .createQueryBuilder("h")
+    .where("h.user = :user", { user: req.session.userId })
+    .andWhere("MONTH(h.createdAt) = :month", { month })
+    .andWhere("YEAR(h.createdAt) = :year", { year })
+    .leftJoinAndSelect("h.workout", "workout")
+    .getMany();
+
   return workouts;
 }
-workoutRouter.get("/history", isAuthenticated, async (req, res) => {
+workoutRouter.post("/history", isAuthenticated, async (req, res) => {
   res.send(await getUserHistory(req));
 });
 

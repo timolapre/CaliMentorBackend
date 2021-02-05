@@ -20,6 +20,9 @@ async function giftPremium(req): Promise<{ succes: boolean; message: string }> {
     return { succes: false, message: "user already has premium" };
   }
   user.type = "gifted_premium";
+  const date = new Date();
+  date.setMonth(date.getMonth() + req.body.months);
+  user.premiumExpireDate = date;
   await userRepo.save(user);
   return { succes: true, message: "Successfully gifted premium" };
 }
@@ -35,8 +38,16 @@ async function infoUsers(req): Promise<any> {
   });
 
   const freeUsers = await userRepo.findAndCount({ type: "free" });
+  const expiredUsers = await userRepo.findAndCount({ type: "expired" });
+  const canceledUsers = await userRepo.findAndCount({ type: "canceled" });
 
-  return { premiumUsers, giftedPremiumUsers, freeUsers };
+  return {
+    premiumUsers,
+    giftedPremiumUsers,
+    freeUsers,
+    expiredUsers,
+    canceledUsers,
+  };
 }
 paymentRouter.get("/users/info", async (req, res) => {
   res.send(await infoUsers(req));
