@@ -32,6 +32,7 @@ async function googleRedirect(req, res) {
     user.accessToken = userData.tokens.access_token;
     user.refreshToken = userData.tokens.refresh_token;
     user.googleId = userData.id;
+    user.loginType = "google";
     user = await userRepo.save(user);
   }
 

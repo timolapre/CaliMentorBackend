@@ -12,7 +12,7 @@ export async function sendEmail(to: string, html: string) {
   });
 
   const info = await transporter.sendMail({
-    from: '"Fred Foo 👻" <foo@example.com>',
+    from: '"CaliMentor" <support@calimentor.com>',
     to,
     subject: "Change Password - CaliMentor",
     html,

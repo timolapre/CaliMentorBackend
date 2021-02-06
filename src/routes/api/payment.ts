@@ -172,7 +172,6 @@ paymentRouter.post("/subscription/success", async (req, res) => {
 });
 
 async function paidSubscription(req, res) {
-  console.log(req.body);
 
   const { object } = req.body.data;
 

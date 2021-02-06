@@ -148,6 +148,8 @@ async function postRegister(req): Promise<UserResponse> {
     username: username.toLowerCase(),
     email,
     password: hashedPassword,
+    loginType: "email",
+    
   });
   const newUser = await userRepo.save(user);
 
@@ -315,12 +317,14 @@ userRouter.post(
   }
 );
 
-// Google authentication
-async function authGoogle(req) {
-  return "";
+// Edit routine
+async function editRoutine(req) {
+  const user = await userRepo.findOne(req.session.userId);
+  user.routine = JSON.stringify(req.body.routine);
+  userRepo.save(user);
 }
-userRouter.post("/auth/google", async (req: Request, res: Response) => {
-  res.send(await authGoogle(req));
+userRouter.post("/routine", async (req: Request, res: Response) => {
+  res.send(await editRoutine(req));
 });
 
 module.exports = userRouter;

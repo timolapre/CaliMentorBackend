@@ -74,6 +74,12 @@ export class User {
   })
   googleId: string;
 
+  @Column("enum", { enum: ["email", "google", "facebook"] })
+  loginType: "email" | "google" | "facebook";
+
+  @Column("text", { nullable: true, default: null })
+  routine: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

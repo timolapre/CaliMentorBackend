@@ -58,16 +58,7 @@ workoutRouter.get("/random", async (req, res) => {
 // search with pagination
 async function getSearch(req): Promise<[Workout[], number]> {
   const { body } = req;
-  let { take } = body;
-  const { filters, skip } = body;
-
-  if (!req.session.userId) {
-    if (skip === 0) {
-      take = 5;
-    } else {
-      return [[], 0];
-    }
-  }
+  const { filters, skip, take } = body;
 
   const qb = workoutRepo
     .createQueryBuilder("w")
@@ -123,14 +114,19 @@ async function getSearch(req): Promise<[Workout[], number]> {
     qb.andWhere("w.createdAt >= :created", { created: d });
   }
 
-  if (filters.top === "likes" || !filters.top) {
-    qb.orderBy("w.createdAt", "DESC").orderBy("w.likes", "DESC");
-  } else if (filters.top === "finishes") {
-    qb.orderBy("w.createdAt", "DESC").orderBy("w.finishes", "DESC");
-  } else if (filters.top === "new") {
-    qb.orderBy("w.createdAt", "DESC");
+  if (req.session.userId) {
+    if (filters.top === "likes" || !filters.top) {
+      qb.orderBy("w.likes", "DESC").addOrderBy("w.createdAt", "DESC");
+    } else if (filters.top === "finishes") {
+      qb.orderBy("w.finishes", "DESC").addOrderBy("w.createdAt", "DESC");
+    } else if (filters.top === "new") {
+      qb.orderBy("w.createdAt", "DESC");
+    }
+    qb.skip(skip).take(take);
+  } else {
+    qb.orderBy("w.likes", "DESC").addOrderBy("w.createdAt", "DESC").take(10);
   }
-  const workouts = await qb.skip(skip).take(take).getManyAndCount();
+  const workouts = await qb.getManyAndCount();
 
   return workouts;
 }
@@ -139,15 +135,32 @@ workoutRouter.post("/search", async (req, res) => {
 });
 
 // one
-async function getOne(id): Promise<Workout> {
+async function getOne(req, res): Promise<Workout | string> {
+  const { id } = req.body;
   const workout = await workoutRepo.findOne(id, {
     relations: ["user", "type", "difficulty", "duration"],
   });
   workout.blocks = workout.blocks ? JSON.parse(workout.blocks) : "";
+
+  if (!req.session.userId) {
+    const topWorkouts = await workoutRepo
+      .createQueryBuilder("w")
+      .orderBy("w.likes", "DESC")
+      .addOrderBy("w.createdAt", "DESC")
+      .take(10)
+      .getMany();
+
+    const findWorkout = topWorkouts.filter((x) => x.id === workout.id);
+
+    if (findWorkout.length === 0) {
+      return "unauthorized";
+    }
+  }
+
   return workout;
 }
 workoutRouter.post("/id", async (req, res) => {
-  res.send(await getOne(req.body.id));
+  res.send(await getOne(req, res));
 });
 
 // create
@@ -177,7 +190,6 @@ async function create(req): Promise<string> {
     }
   }
   try {
-    console.log(newExercises);
     await exerciseRepo.save(newExercises);
   } catch (e) {
     console.log("error");
@@ -244,10 +256,13 @@ async function getUserHistory(req): Promise<WorkoutHistory[]> {
   //   order: { createdAt: "DESC" },
   // });
 
+  if (!req.body.date) {
+    return [];
+  }
+
   const date = req.body.date.split("-");
   const year = date[0];
   const month = date[1];
-  
 
   const workouts = await workoutHistory
     .createQueryBuilder("h")

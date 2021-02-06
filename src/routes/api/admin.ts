@@ -30,6 +30,20 @@ paymentRouter.post("/premiumgift", async (req, res) => {
   res.send(await giftPremium(req));
 });
 
+// Fake login
+async function fakeLogin(req): Promise<string> {
+  const user = await userRepo.findOne({ username: req.body.username });
+  
+  if (!user) {
+    return "User not found";
+  }
+  req.session.userId = user.id;
+  return "Success";
+}
+paymentRouter.post("/fakelogin", async (req, res) => {
+  res.send(await fakeLogin(req));
+});
+
 // All admin users info
 async function infoUsers(req): Promise<any> {
   const premiumUsers = await userRepo.findAndCount({ type: "premium" });
