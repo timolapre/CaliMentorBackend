@@ -433,7 +433,7 @@ workoutRouter.get("/durations", async (req, res) => {
 
 // Exercises
 async function getExercises(): Promise<Exercise[]> {
-  const exercises = await exerciseRepo.find();
+  const exercises = await exerciseRepo.find({ approved: true });
   return exercises;
 }
 workoutRouter.get("/exercises", async (req, res) => {

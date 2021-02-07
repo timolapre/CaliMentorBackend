@@ -76,7 +76,7 @@ async function checkoutSession(req, res): Promise<boolean> {
         ],
         line_items: [
           {
-            price: "price_1IH6jnEWDRtjeSYYqMHcwrlp",
+            price: process.env.STRIPE_PRODUCT_SINGLE,
             quantity: req.body.months,
           },
         ],
@@ -91,7 +91,7 @@ async function checkoutSession(req, res): Promise<boolean> {
         payment_method_types: ["card"],
         line_items: [
           {
-            price: "price_1IH6NdEWDRtjeSYYghz2U36X",
+            price: process.env.STRIPE_PRODUCT_SUBSCRIPTION,
             quantity: 1,
           },
         ],
@@ -172,7 +172,6 @@ paymentRouter.post("/subscription/success", async (req, res) => {
 });
 
 async function paidSubscription(req, res) {
-
   const { object } = req.body.data;
 
   const user = await userRepo.findOne({ stripeCustomerId: object.customer });
