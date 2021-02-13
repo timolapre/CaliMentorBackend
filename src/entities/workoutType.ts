@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  Generated,
+} from "typeorm";
 import { Workout } from "./workout";
 
 @Entity()
@@ -8,6 +14,9 @@ export class WorkoutType {
 
   @Column("varchar", { length: 128 })
   text: string;
+
+  @Column("integer", { nullable: false, default: 999 })
+  order: number;
 
   @OneToMany(() => Workout, (workout) => workout.type)
   workouts: Workout[];

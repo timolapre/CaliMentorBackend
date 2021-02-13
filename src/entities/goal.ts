@@ -5,23 +5,28 @@ import {
   UpdateDateColumn,
   Column,
   ManyToOne,
-  OneToMany,
-  Unique,
 } from "typeorm";
 import { User } from "./user";
-import { PersonalRecordHistory } from "./personalRecordHistory";
 
 @Entity()
-@Unique(["exercise", "append"])
-export class PersonalRecord {
+export class Goal {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column("varchar", { length: 128, nullable: false })
   exercise: string;
 
+  @Column("integer", { nullable: false, default: 0 })
+  count: number;
+
   @Column("varchar", { length: 4, nullable: true })
   append: string;
+
+  @Column("datetime", { nullable: true })
+  deadline: Date;
+
+  @Column("bool", { default: false })
+  done: boolean;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -31,7 +36,4 @@ export class PersonalRecord {
 
   @ManyToOne(() => User, (user) => user.personalRecords)
   user: User;
-
-  @OneToMany(() => PersonalRecordHistory, (history) => history.PersonalRecord)
-  history: PersonalRecordHistory;
 }

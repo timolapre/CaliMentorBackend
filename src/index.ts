@@ -20,7 +20,9 @@ import { Favorite } from "./entities/favorite";
 import { Exercise } from "./entities/exercise";
 import { PersonalRecord } from "./entities/personalRecord";
 import { WorkoutHistory } from "./entities/workoutHistory";
+import { Goal } from "./entities/goal";
 import { startCronJobs } from "./util/cronJobs";
+import { PersonalRecordHistory } from "./entities/personalRecordHistory";
 
 declare module "express-session" {
   export interface SessionData {
@@ -49,7 +51,9 @@ const main = async () => {
       Favorite,
       Exercise,
       PersonalRecord,
+      PersonalRecordHistory,
       WorkoutHistory,
+      Goal,
     ],
     migrations: ["./migrations/*.[tj]s"],
   });

@@ -12,6 +12,9 @@ apiRouter.use("/workout", workout);
 const personalRecord = require("./api/personalrecord");
 apiRouter.use("/personalrecord", personalRecord);
 
+const goal = require("./api/goal");
+apiRouter.use("/goal", goal);
+
 const payment = require("./api/payment");
 apiRouter.use("/payment", payment);
 

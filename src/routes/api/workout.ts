@@ -406,7 +406,7 @@ workoutRouter.post("/finish", async (req, res) => {
 
 // types
 async function getTypes(): Promise<WorkoutType[]> {
-  const workoutTypes = await workoutTypeRepo.find();
+  const workoutTypes = await workoutTypeRepo.find({ order: { order: "ASC" } });
   return workoutTypes;
 }
 workoutRouter.get("/types", async (req, res) => {
