@@ -1,6 +1,6 @@
 import { getRepository } from "typeorm";
 import { User } from "../../entities/user";
-import { isAuthenticated } from "../../util/authentication";
+import { isAuthenticated, isPremium2 } from "../../util/authentication";
 import { PersonalRecord } from "../../entities/personalRecord";
 import { PersonalRecordHistory } from "../../entities/personalRecordHistory";
 
@@ -64,15 +64,22 @@ personalRecordRouter.post("/one", isAuthenticated, async (req, res) => {
 //   res.send(await editPersonalRecord(req));
 // });
 
-async function addPersonalRecord(req): Promise<string> {
+async function addPersonalRecord(req): Promise<string | number> {
   const { exercise, count, append, id } = req.body;
-
-  const user = await userRepo.findOne({ id: req.session.userId });
 
   let pr = await personalRecordRepo.findOne({ id });
   if (!pr) {
+    if (!(await isPremium2(req))) {
+      const prCount = await personalRecordRepo.find({
+        user: req.session.userId,
+      });
+      if (prCount.length + 1 > 4) {
+        return 401;
+      }
+    }
+
     pr = new PersonalRecord();
-    pr.user = user;
+    pr.user = req.session.userId;
     pr.exercise = exercise;
     pr.append = append;
     pr = await personalRecordRepo.save(pr);
@@ -86,6 +93,15 @@ async function addPersonalRecord(req): Promise<string> {
 }
 personalRecordRouter.post("/add", isAuthenticated, async (req, res) => {
   res.send(await addPersonalRecord(req));
+});
+
+async function deletePersonalRecord(req): Promise<boolean> {
+  const { id } = req.body;
+  await personalRecordRepo.delete({ id });
+  return true;
+}
+personalRecordRouter.post("/delete", isAuthenticated, async (req, res) => {
+  res.send(await deletePersonalRecord(req));
 });
 
 module.exports = personalRecordRouter;

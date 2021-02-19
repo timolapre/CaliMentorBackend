@@ -12,7 +12,7 @@ import { User } from "./user";
 import { PersonalRecordHistory } from "./personalRecordHistory";
 
 @Entity()
-@Unique(["exercise", "append"])
+@Unique(["exercise", "append", "user"])
 export class PersonalRecord {
   @PrimaryGeneratedColumn("uuid")
   id: string;

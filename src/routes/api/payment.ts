@@ -2,8 +2,10 @@ import { getRepository } from "typeorm";
 
 import { stripe } from "../../stripeService";
 import { User } from "../../entities/user";
+import { Earning } from "../../entities/earning";
 
 const userRepo = getRepository(User);
+const earningRepo = getRepository(Earning);
 const paymentRouter = require("express").Router();
 
 // async function chargePayment(req): Promise<boolean> {
@@ -59,6 +61,7 @@ async function checkoutSession(req, res): Promise<boolean> {
     }
 
     let session = null;
+    const { months } = req.body;
     if (req.body.method === "Single") {
       session = await stripe.checkout.sessions.create({
         customer: customerId,
@@ -77,7 +80,7 @@ async function checkoutSession(req, res): Promise<boolean> {
         line_items: [
           {
             price: process.env.STRIPE_PRODUCT_SINGLE,
-            quantity: req.body.months,
+            quantity: months,
           },
         ],
         // {CHECKOUT_SESSION_ID} is a string literal; do not change it!
@@ -126,6 +129,8 @@ async function success(req, res) {
   const { object } = req.body.data;
 
   if (object.status !== "succeeded") {
+    console.log("failed");
+
     return 400;
   }
 
@@ -147,6 +152,31 @@ async function success(req, res) {
     user.premiumExpireDate = date;
     user.type = "premium";
     await userRepo.save(user);
+
+    //Add earnings
+    for (let m = 0; m < months; m++) {
+      const mDate = new Date();
+      mDate.setMonth(mDate.getMonth() + m);
+      const fullDate =
+        // eslint-disable-next-line prefer-template
+        mDate.getFullYear().toString() +
+        "-" +
+        (mDate.getMonth() + 1).toString();
+
+      // eslint-disable-next-line no-await-in-loop
+      const earning = await earningRepo.findOne({ where: { month: fullDate } });
+      if (earning) {
+        earning.earnings += 1.99;
+        // eslint-disable-next-line no-await-in-loop
+        await earningRepo.save(earning);
+      } else {
+        const newEarning = new Earning();
+        newEarning.month = fullDate;
+        newEarning.earnings = 1.99;
+        // eslint-disable-next-line no-await-in-loop
+        await earningRepo.save(newEarning);
+      }
+    }
   } catch (e) {
     console.log(e);
     return 400;

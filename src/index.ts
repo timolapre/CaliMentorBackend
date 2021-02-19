@@ -23,6 +23,7 @@ import { WorkoutHistory } from "./entities/workoutHistory";
 import { Goal } from "./entities/goal";
 import { startCronJobs } from "./util/cronJobs";
 import { PersonalRecordHistory } from "./entities/personalRecordHistory";
+import { Earning } from "./entities/earning";
 
 declare module "express-session" {
   export interface SessionData {
@@ -54,6 +55,7 @@ const main = async () => {
       PersonalRecordHistory,
       WorkoutHistory,
       Goal,
+      Earning,
     ],
     migrations: ["./migrations/*.[tj]s"],
   });

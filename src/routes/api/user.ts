@@ -42,10 +42,10 @@ userRouter.get("/me", async (req: Request, res: Response) => {
 async function updateMe(req): Promise<UserResponse> {
   const { username, email } = req.body.user;
 
-  if (!username || username.length <= 2) {
+  if (!username || username.length <= 2 || username.indexOf(" ") >= 0) {
     return {
       errors: {
-        username: "length should be greater than 2",
+        username: "length should be greater than 2 with no spaces",
       },
     };
   }
@@ -58,11 +58,19 @@ async function updateMe(req): Promise<UserResponse> {
     };
   }
 
-  const checkUsername = await userRepo.findOne({ username });
+  const checkUsername = await userRepo.findOne({ username: username.toLowerCase() });
   if (checkUsername && checkUsername.id !== req.session.userId) {
     return {
       errors: {
         username: "username already taken",
+      },
+    };
+  }
+  const checkEmail = await userRepo.findOne({ email: email.toLowerCase() });
+  if (checkEmail && checkEmail.id !== req.session.userId) {
+    return {
+      errors: {
+        email: "email already used by other account",
       },
     };
   }
@@ -73,8 +81,8 @@ async function updateMe(req): Promise<UserResponse> {
     .where("u.id = :id", { id: req.session.userId })
     .getOne();
 
-  meUser.username = username;
-  meUser.email = email;
+  meUser.username = username.toLowerCase();
+  meUser.email = email.toLowerCase();
 
   const user = await userRepo.save(meUser);
   return { user };
@@ -91,10 +99,10 @@ userRouter.post(
 async function postRegister(req): Promise<UserResponse> {
   const { username, email, password, repeatPassword, country } = req.body;
 
-  if (!username || username.length <= 2) {
+  if (!username || username.length <= 2 || username.indexOf(" ") >= 0) {
     return {
       errors: {
-        username: "length should be greater than 2",
+        username: "length should be greater than 2 with no spaces",
       },
     };
   }
@@ -142,14 +150,24 @@ async function postRegister(req): Promise<UserResponse> {
       },
     };
   }
+  const userEmailDuplicate = await userRepo.findOne({
+    email: email.toLowerCase(),
+  });
+
+  if (userEmailDuplicate) {
+    return {
+      errors: {
+        email: "user with this email adress already exists",
+      },
+    };
+  }
 
   const hashedPassword = await bcrypt.hash(password, 10);
   const user = userRepo.create({
     username: username.toLowerCase(),
-    email,
+    email: email.toLowerCase(),
     password: hashedPassword,
     loginType: "email",
-    
   });
   const newUser = await userRepo.save(user);
 

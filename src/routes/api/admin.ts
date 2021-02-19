@@ -3,11 +3,13 @@ import { getRepository } from "typeorm";
 import { stripe } from "../../stripeService";
 import { User } from "../../entities/user";
 import { Exercise } from "../../entities/exercise";
+import { Earning } from "../../entities/earning";
 
 const paymentRouter = require("express").Router();
 
 const userRepo = getRepository(User);
 const exerciseRepo = getRepository(Exercise);
+const earningRepo = getRepository(Earning);
 
 // gift premium
 async function giftPremium(req): Promise<{ succes: boolean; message: string }> {
@@ -33,7 +35,7 @@ paymentRouter.post("/premiumgift", async (req, res) => {
 // Fake login
 async function fakeLogin(req): Promise<string> {
   const user = await userRepo.findOne({ username: req.body.username });
-  
+
   if (!user) {
     return "User not found";
   }
@@ -119,6 +121,15 @@ async function infoExercises(): Promise<Exercise[]> {
 }
 paymentRouter.get("/exercises/info", async (req, res) => {
   res.send(await infoExercises());
+});
+
+// Earnings
+async function getEarnings(): Promise<Earning[]> {
+  const earnings = await earningRepo.find({ order: { month: "DESC" } });
+  return earnings;
+}
+paymentRouter.get("/earnings", async (req, res) => {
+  res.send(await getEarnings());
 });
 
 module.exports = paymentRouter;

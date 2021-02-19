@@ -1,6 +1,6 @@
 import { getRepository } from "typeorm";
 import { User } from "../../entities/user";
-import { isAuthenticated } from "../../util/authentication";
+import { isAuthenticated, isPremium2 } from "../../util/authentication";
 import { Goal } from "../../entities/goal";
 
 const goalRouter = require("express").Router();
@@ -54,13 +54,21 @@ goalRouter.post("/edit", isAuthenticated, async (req, res) => {
   res.send(await editGoal(req));
 });
 
-async function addGoal(req): Promise<Goal> {
+async function addGoal(req): Promise<Goal | number> {
   const { exercise, count, append, deadline } = req.body;
 
-  const user = await userRepo.findOne({ id: req.session.userId });
+  if (!(await isPremium2(req))) {
+    const goalCount = await goalRepo.find({
+      user: req.session.userId,
+      done: false,
+    });
+    if (goalCount.length + 1 > 2) {
+      return 401;
+    }
+  }
 
   let goal = new Goal();
-  goal.user = user;
+  goal.user = req.session.userId;
   goal.exercise = exercise;
   goal.count = count;
   goal.append = append;
