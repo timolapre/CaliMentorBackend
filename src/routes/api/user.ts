@@ -247,8 +247,7 @@ async function forgotPassword(req): Promise<boolean> {
     1000 * 60 * 60 * 24 // 1 day
   );
 
-  const html = `<a href="http://localhost:3000/resetpassword/${token}">Reset password</>`;
-  await sendEmail(email, html);
+  await sendEmail(email, token);
 
   return true;
 }
