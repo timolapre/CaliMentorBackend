@@ -4,17 +4,20 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Column,
-  OneToMany,
+  ManyToOne,
 } from "typeorm";
-import { ExerciseLevel } from "./exerciseLevel";
+import { Exercise } from "./exercise";
 
 @Entity()
-export class Exercise {
+export class ExerciseLevel {
   @PrimaryGeneratedColumn("increment")
   id: string;
 
   @Column("varchar", { length: 128, unique: true })
   name: string;
+
+  @Column("int")
+  order: number;
 
   @Column("bool", { nullable: false, default: 0 })
   video: boolean;
@@ -22,11 +25,10 @@ export class Exercise {
   @Column("bool", { default: false })
   approved: boolean;
 
-  @Column("int", { default: 0 })
-  type: number;
-
-  @OneToMany(() => ExerciseLevel, (exlevel) => exlevel.exercise)
-  levels: ExerciseLevel[];
+  @ManyToOne(() => Exercise, (exercise) => exercise.levels, {
+    onDelete: "CASCADE",
+  })
+  exercise: Exercise;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -9,12 +9,14 @@ import { Like } from "../../entities/like";
 import { Favorite } from "../../entities/favorite";
 import { Exercise } from "../../entities/exercise";
 import { WorkoutHistory } from "../../entities/workoutHistory";
+import { ExerciseLevel } from "../../entities/exerciseLevel";
 
 const workoutRouter = require("express").Router();
 
 const workoutRepo = getRepository(Workout);
 const workoutHistory = getRepository(WorkoutHistory);
 const exerciseRepo = getRepository(Exercise);
+const exerciseLevelRepo = getRepository(ExerciseLevel);
 const likeRepo = getRepository(Like);
 const favoriteRepo = getRepository(Favorite);
 const userRepo = getRepository(User);
@@ -429,15 +431,6 @@ async function getDurations(): Promise<WorkoutDifficulty[]> {
 }
 workoutRouter.get("/durations", async (req, res) => {
   res.send(await getDurations());
-});
-
-// Exercises
-async function getExercises(): Promise<Exercise[]> {
-  const exercises = await exerciseRepo.find({ approved: true });
-  return exercises;
-}
-workoutRouter.get("/exercises", async (req, res) => {
-  res.send(await getExercises());
 });
 
 // import axios from "axios";

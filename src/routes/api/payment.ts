@@ -138,6 +138,9 @@ async function success(req, res) {
     const months = object.amount / 199;
 
     const user = await userRepo.findOne({ stripeCustomerId: object.customer });
+    if(!user){
+      return 400;
+    }
     if (user.paymentMethod === "None") {
       user.paymentMethod = "Single";
     }

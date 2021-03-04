@@ -58,7 +58,9 @@ async function updateMe(req): Promise<UserResponse> {
     };
   }
 
-  const checkUsername = await userRepo.findOne({ username: username.toLowerCase() });
+  const checkUsername = await userRepo.findOne({
+    username: username.toLowerCase(),
+  });
   if (checkUsername && checkUsername.id !== req.session.userId) {
     return {
       errors: {
@@ -119,6 +121,14 @@ async function postRegister(req): Promise<UserResponse> {
     return {
       errors: {
         password: "length should be greater than 3 with no spaces",
+      },
+    };
+  }
+
+  if (password.length > 128) {
+    return {
+      errors: {
+        password: "password is too long",
       },
     };
   }
@@ -267,6 +277,14 @@ async function resetPassword(req): Promise<UserResponse> {
     };
   }
 
+  if (password.length > 128) {
+    return {
+      errors: {
+        password: "password is too long",
+      },
+    };
+  }
+
   if (!repeatPassword || repeatPassword !== password) {
     return {
       errors: {
@@ -303,6 +321,14 @@ async function changepassword(req): Promise<UserResponse> {
     return {
       errors: {
         password: "length should be greater than 3 with no spaces",
+      },
+    };
+  }
+
+  if (password.length > 128) {
+    return {
+      errors: {
+        password: "password is too long",
       },
     };
   }
