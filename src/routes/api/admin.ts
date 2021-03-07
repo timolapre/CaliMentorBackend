@@ -131,12 +131,13 @@ adminRouter.get("/exercises/info", async (req, res) => {
 });
 
 // Update exercise level order
-async function updateOrder(req): Promise<boolean> {
+async function update(req): Promise<boolean> {
   const { exercise } = req.body;
   exerciseRepo
     .createQueryBuilder()
     .update(Exercise)
     .set({ name: exercise.name })
+    .set({ type: exercise.type })
     .where("id = :id", { id: exercise.id })
     .execute();
 
@@ -151,8 +152,8 @@ async function updateOrder(req): Promise<boolean> {
 
   return true;
 }
-adminRouter.post("/exercises/order", async (req, res) => {
-  res.send(await updateOrder(req));
+adminRouter.post("/exercises/update", async (req, res) => {
+  res.send(await update(req));
 });
 
 //add Exercise Level
