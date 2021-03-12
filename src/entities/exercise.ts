@@ -19,7 +19,7 @@ export class Exercise {
   @Column("bool", { nullable: false, default: 0 })
   video: boolean;
 
-  @Column("text", { default: "webp" })
+  @Column("varchar", { default: "webp" })
   fileType: string;
 
   @Column("bool", { default: false })
