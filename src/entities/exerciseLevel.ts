@@ -22,6 +22,9 @@ export class ExerciseLevel {
   @Column("bool", { nullable: false, default: 0 })
   video: boolean;
 
+  @Column("varchar", { default: "webp" })
+  fileType: string;
+
   @Column("bool", { default: false })
   approved: boolean;
 
