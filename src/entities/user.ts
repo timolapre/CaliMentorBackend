@@ -37,6 +37,9 @@ export class User {
   })
   type: "free" | "premium" | "gifted_premium" | "expired" | "canceled";
 
+  @Column("bool", { default: false })
+  dailyFinish: boolean;
+
   @Column("date", { nullable: true, default: null })
   premiumExpireDate: Date;
 

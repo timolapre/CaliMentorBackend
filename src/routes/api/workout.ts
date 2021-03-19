@@ -46,15 +46,74 @@ workoutRouter.get("/all", async (req, res) => {
 });
 
 // Random
-async function getRandom(): Promise<string> {
-  const workouts = await workoutRepo
+async function getRandom(req): Promise<string> {
+  // const workouts = await workoutRepo
+  //   .createQueryBuilder("w")
+  //   .orderBy("RAND()")
+  //   .getOne();
+
+  const { filters } = req.body;
+
+  const qb = workoutRepo
     .createQueryBuilder("w")
-    .orderBy("RAND()")
-    .getOne();
-  return workouts.id;
+    .innerJoinAndSelect("w.type", "type")
+    .innerJoinAndSelect("w.difficulty", "difficulty")
+    .innerJoinAndSelect("w.duration", "duration")
+    .innerJoinAndSelect("w.user", "user");
+
+  if (filters.name) {
+    qb.andWhere("w.name LIKE :name", { name: `%${filters.name}%` });
+  }
+  if (filters.type) {
+    qb.andWhere("w.typeId = :type", { type: filters.type });
+  }
+  if (filters.difficulty) {
+    qb.andWhere("w.difficultyId = :difficulty", {
+      difficulty: filters.difficulty,
+    });
+  }
+  if (filters.duration) {
+    qb.andWhere("w.durationId = :duration", { duration: filters.duration });
+  }
+  if (filters.creator) {
+    qb.andWhere("user.username LIKE :creator", {
+      creator: `%${filters.creator}%`,
+    });
+  }
+  if (filters.me) {
+    qb.andWhere("w.user = :me", {
+      me: req.session.userId,
+    });
+  }
+  if (filters.favorited) {
+    qb.innerJoin(
+      "w.favoriteList",
+      "favoriteList"
+    ).andWhere("favoriteList.user = :id", { id: req.session.userId });
+  }
+  if (filters.date) {
+    const d = new Date();
+    if (parseInt(filters.date, 10) === 1) {
+      d.setDate(d.getDate() - 1);
+    }
+    if (parseInt(filters.date, 10) === 2) {
+      d.setDate(d.getDate() - 7);
+    }
+    if (parseInt(filters.date, 10) === 3) {
+      d.setDate(d.getDate() - 30);
+    }
+    if (parseInt(filters.date, 10) === 4) {
+      d.setDate(d.getDate() - 365);
+    }
+    qb.andWhere("w.createdAt >= :created", { created: d });
+  }
+
+  const workout = await qb.orderBy("RAND()").getOne();
+
+  return workout.id;
 }
-workoutRouter.get("/random", async (req, res) => {
-  res.send(await getRandom());
+workoutRouter.post("/random", isAuthenticated, async (req, res) => {
+  res.send(await getRandom(req));
 });
 
 // search with pagination
@@ -380,7 +439,7 @@ async function viewWorkout(req, res): Promise<Boolean> {
   const workout = await workoutRepo.findOne({ id: body.id });
   if (workout) {
     workout.views += 1;
-    workoutRepo.save(workout);
+    await workoutRepo.save(workout);
   }
   return true;
 }
@@ -391,10 +450,14 @@ workoutRouter.post("/view", async (req, res) => {
 // finish
 async function finishWorkout(req, res): Promise<Boolean> {
   const { id } = req.body;
-  const workout = await workoutRepo.findOne({ id });
-  workout.finishes += 1;
-  await workoutRepo.save(workout);
-
+  const user = await userRepo.findOne({ id: req.session.userId });
+  if (user.dailyFinish === false) {
+    user.dailyFinish = true;
+    await userRepo.save(user);
+    const workout = await workoutRepo.findOne({ id });
+    workout.finishes += 1;
+    await workoutRepo.save(workout);
+  }
   const history = new WorkoutHistory();
   history.user = req.session.userId;
   history.workout = id;
@@ -402,7 +465,7 @@ async function finishWorkout(req, res): Promise<Boolean> {
 
   return true;
 }
-workoutRouter.post("/finish", async (req, res) => {
+workoutRouter.post("/finish", isAuthenticated, async (req, res) => {
   res.send(await finishWorkout(req, res));
 });
 
