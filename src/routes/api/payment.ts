@@ -46,7 +46,12 @@ async function checkoutSession(req, res): Promise<boolean> {
   // for additional parameters to pass.
 
   try {
-    const user = await userRepo.findOne(req.session.userId);
+    const user = await userRepo
+      .createQueryBuilder("u")
+      .where("u.id = :id", { id: req.session.userId })
+      .addSelect("u.stripeCustomerId")
+      .getOne();
+
     let customerId = null;
     if (!user.stripeCustomerId) {
       const customer = await stripe.customers.create({
@@ -138,7 +143,7 @@ async function success(req, res) {
     const months = object.amount / 199;
 
     const user = await userRepo.findOne({ stripeCustomerId: object.customer });
-    if(!user){
+    if (!user) {
       return 400;
     }
     if (user.paymentMethod === "None") {
