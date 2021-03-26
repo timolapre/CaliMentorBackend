@@ -68,4 +68,14 @@ exerciseRouter.get("/", async (req, res) => {
   res.send(await getAllExercises());
 });
 
+// Exercises
+async function getExercisesCount(): Promise<string> {
+  const count1 = await exerciseRepo.count({ where: { approved: true } });
+  const count2 = await exerciseLevelRepo.count({ where: { approved: true } });
+  return (count1 + count2).toString();
+}
+exerciseRouter.get("/count", async (req, res) => {
+  res.send(await getExercisesCount());
+});
+
 module.exports = exerciseRouter;

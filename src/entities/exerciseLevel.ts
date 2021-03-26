@@ -25,7 +25,7 @@ export class ExerciseLevel {
   @Column("varchar", { default: "webp" })
   fileType: string;
 
-  @Column("bool", { default: false })
+  @Column("bool", { default: true })
   approved: boolean;
 
   @ManyToOne(() => Exercise, (exercise) => exercise.levels, {

@@ -238,10 +238,12 @@ async function create(req): Promise<string> {
     for await (const exercise of block.exercises) {
       const { name } = exercise;
       const exercsieExists = await exerciseRepo.findOne({ name });
+      const exercsieLevelExists = await exerciseLevelRepo.findOne({ name });
 
       if (
         name &&
         !exercsieExists &&
+        !exercsieLevelExists &&
         !newExercises.some((el) => el.name === name)
       ) {
         const newExercise = new Exercise();
