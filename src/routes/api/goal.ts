@@ -55,7 +55,8 @@ goalRouter.post("/edit", isAuthenticated, async (req, res) => {
 });
 
 async function addGoal(req): Promise<Goal | number> {
-  const { exercise, count, append, deadline } = req.body;
+  const { exercise, deadline } = req.body;
+  const { name, count, append } = exercise;
 
   if (!(await isPremium2(req))) {
     const goalCount = await goalRepo.find({
@@ -69,7 +70,7 @@ async function addGoal(req): Promise<Goal | number> {
 
   let goal = new Goal();
   goal.user = req.session.userId;
-  goal.exercise = exercise;
+  goal.exercise = name;
   goal.count = count;
   goal.append = append;
   goal.deadline = deadline || null;

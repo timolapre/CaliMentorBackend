@@ -64,11 +64,14 @@ personalRecordRouter.post("/one", isAuthenticated, async (req, res) => {
 //   res.send(await editPersonalRecord(req));
 // });
 
-async function addPersonalRecord(req): Promise<string | number> {
-  const { exercise, count, append, id } = req.body;
+async function addPersonalRecord(req): Promise<PersonalRecord | number> {
+  const { name, count, append, id } = req.body.exercise;
 
-  let pr = await personalRecordRepo.findOne({ id });
-  if (!pr) {
+  let pr = null;
+
+  if (id) {
+    pr = await personalRecordRepo.findOne({ id });
+  } else {
     if (!(await isPremium2(req))) {
       const prCount = await personalRecordRepo.find({
         user: req.session.userId,
@@ -80,16 +83,25 @@ async function addPersonalRecord(req): Promise<string | number> {
 
     pr = new PersonalRecord();
     pr.user = req.session.userId;
-    pr.exercise = exercise;
+    pr.exercise = name;
     pr.append = append;
     pr = await personalRecordRepo.save(pr);
   }
+
   const prHistory = new PersonalRecordHistory();
   prHistory.PersonalRecord = pr;
   prHistory.count = count;
-  personalRecordHistoryRepo.save(prHistory);
+  await personalRecordHistoryRepo.save(prHistory);
 
-  return pr.id;
+  pr = await personalRecordRepo
+    .createQueryBuilder("pr")
+    .where("pr.id = :id", { id: pr.id })
+    .orderBy("pr.createdAt", "ASC")
+    .innerJoinAndSelect("pr.history", "h")
+    .addOrderBy("h.createdAt", "DESC")
+    .getOne();
+
+  return pr;
 }
 personalRecordRouter.post("/add", isAuthenticated, async (req, res) => {
   res.send(await addPersonalRecord(req));

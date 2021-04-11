@@ -42,7 +42,7 @@ export async function isPremium(req, res, next) {
     return res.sendStatus(401);
   }
 
-  if (user.type === "free") {
+  if (user.type !== "premium" && user.type !== "gifted_premium") {
     return res.sendStatus(401);
   }
 
@@ -55,7 +55,7 @@ export async function isPremium2(req): Promise<Boolean> {
   }
 
   const user = await userRepo.findOne(req.session.userId);
-  if (user.type === "free") {
+  if (user.type !== "premium" && user.type !== "gifted_premium") {
     return false;
   }
 

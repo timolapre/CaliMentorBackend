@@ -60,8 +60,14 @@ exerciseRouter.post("/id", async (req, res) => {
 
 // Exercises
 async function getAllExercises(): Promise<(Exercise | ExerciseLevel)[]> {
-  const exercises = await exerciseRepo.find({ approved: true });
-  const exercises2 = await exerciseLevelRepo.find({ approved: true });
+  const exercises = await exerciseRepo.find({
+    where: { approved: true },
+    order: { name: "ASC" },
+  });
+  const exercises2 = await exerciseLevelRepo.find({
+    where: { approved: true },
+    order: { name: "ASC" },
+  });
   return [...exercises, ...exercises2];
 }
 exerciseRouter.get("/", async (req, res) => {
