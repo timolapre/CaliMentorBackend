@@ -20,6 +20,15 @@ function startCronJobs(connection: Connection) {
       .set({ dailyFinish: false })
       .execute();
   });
+
+  //monthly
+  schedule.scheduleJob("0 0 1 * *", () => {
+    userRepo
+      .createQueryBuilder()
+      .update(User)
+      .set({ monthlyFinishes: 0 })
+      .execute();
+  });
 }
 
 export { startCronJobs };

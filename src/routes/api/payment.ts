@@ -134,8 +134,6 @@ async function success(req, res) {
   const { object } = req.body.data;
 
   if (object.status !== "succeeded") {
-    console.log("failed");
-
     return 400;
   }
 

@@ -40,6 +40,9 @@ export class User {
   @Column("bool", { default: false })
   dailyFinish: boolean;
 
+  @Column("int", { default: 0 })
+  monthlyFinishes: number;
+
   @Column("date", { nullable: true, default: null })
   premiumExpireDate: Date;
 

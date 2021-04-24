@@ -175,18 +175,15 @@ async function getSearch(req): Promise<[Workout[], number]> {
     qb.andWhere("w.createdAt >= :created", { created: d });
   }
 
-  if (req.session.userId) {
-    if (filters.top === "likes" || !filters.top) {
-      qb.orderBy("w.likes", "DESC").addOrderBy("w.createdAt", "DESC");
-    } else if (filters.top === "finishes") {
-      qb.orderBy("w.finishes", "DESC").addOrderBy("w.createdAt", "DESC");
-    } else if (filters.top === "new") {
-      qb.orderBy("w.createdAt", "DESC");
-    }
-    qb.skip(skip).take(take);
-  } else {
-    qb.orderBy("w.likes", "DESC").addOrderBy("w.createdAt", "DESC").take(10);
+  if (filters.top === "likes" || !filters.top) {
+    qb.orderBy("w.likes", "DESC").addOrderBy("w.createdAt", "DESC");
+  } else if (filters.top === "finishes") {
+    qb.orderBy("w.finishes", "DESC").addOrderBy("w.createdAt", "DESC");
+  } else if (filters.top === "new") {
+    qb.orderBy("w.createdAt", "DESC");
   }
+  qb.skip(skip).take(take);
+
   const workouts = await qb.getManyAndCount();
 
   return workouts;
@@ -196,31 +193,22 @@ workoutRouter.post("/search", async (req, res) => {
 });
 
 // one
-async function getOne(req, res): Promise<Workout | string> {
+async function getOne(req, res): Promise<Workout | number> {
   const { id } = req.body;
   const workout = await workoutRepo.findOne(id, {
     relations: ["user", "type", "difficulty", "duration"],
   });
   workout.blocks = workout.blocks ? JSON.parse(workout.blocks) : "";
 
-  if (!req.session.userId) {
-    const topWorkouts = await workoutRepo
-      .createQueryBuilder("w")
-      .orderBy("w.likes", "DESC")
-      .addOrderBy("w.createdAt", "DESC")
-      .take(10)
-      .getMany();
-
-    const findWorkout = topWorkouts.filter((x) => x.id === workout.id);
-
-    if (findWorkout.length === 0) {
-      return "unauthorized";
+  if (!(await isPremium2(req))) {
+    const user = await userRepo.findOne(req.session.userId);
+    if (!user || user.monthlyFinishes >= 5) {
+      return 401;
     }
   }
-
   return workout;
 }
-workoutRouter.post("/id", async (req, res) => {
+workoutRouter.post("/id", isAuthenticated, async (req, res) => {
   res.send(await getOne(req, res));
 });
 
@@ -455,11 +443,12 @@ async function finishWorkout(req, res): Promise<Boolean> {
   const user = await userRepo.findOne({ id: req.session.userId });
   if (user.dailyFinish === false) {
     user.dailyFinish = true;
-    await userRepo.save(user);
     const workout = await workoutRepo.findOne({ id });
     workout.finishes += 1;
     await workoutRepo.save(workout);
   }
+  user.monthlyFinishes += 1;
+  await userRepo.save(user);
   const history = new WorkoutHistory();
   history.user = req.session.userId;
   history.workout = id;

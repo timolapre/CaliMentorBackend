@@ -49,14 +49,27 @@ adminRouter.post("/fakelogin", async (req, res) => {
 
 // All admin users info
 async function infoUsers(req): Promise<any> {
-  const premiumUsers = await userRepo.findAndCount({ type: "premium" });
+  const premiumUsers = await userRepo.findAndCount({
+    where: { type: "premium" },
+    order: { createdAt: "DESC" },
+  });
   const giftedPremiumUsers = await userRepo.findAndCount({
-    type: "gifted_premium",
+    where: { type: "gifted_premium" },
+    order: { createdAt: "DESC" },
   });
 
-  const freeUsers = await userRepo.findAndCount({ type: "free" });
-  const expiredUsers = await userRepo.findAndCount({ type: "expired" });
-  const canceledUsers = await userRepo.findAndCount({ type: "canceled" });
+  const freeUsers = await userRepo.findAndCount({
+    where: { type: "free" },
+    order: { createdAt: "DESC" },
+  });
+  const expiredUsers = await userRepo.findAndCount({
+    where: { type: "expired" },
+    order: { createdAt: "DESC" },
+  });
+  const canceledUsers = await userRepo.findAndCount({
+    where: { type: "canceled" },
+    order: { createdAt: "DESC" },
+  });
 
   return {
     premiumUsers,

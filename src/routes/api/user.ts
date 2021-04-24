@@ -99,7 +99,7 @@ userRouter.post(
 
 // register
 async function postRegister(req): Promise<UserResponse> {
-  const { username, email, password, repeatPassword, country } = req.body;
+  const { username, email, password, repeatPassword } = req.body;
 
   if (!username || username.length <= 2 || username.indexOf(" ") >= 0) {
     return {
@@ -137,14 +137,6 @@ async function postRegister(req): Promise<UserResponse> {
     return {
       errors: {
         repeatPassword: "passwords do not match",
-      },
-    };
-  }
-
-  if (!country) {
-    return {
-      errors: {
-        country: "fill in your country",
       },
     };
   }
