@@ -4,6 +4,7 @@ import { User } from "../../entities/user";
 import { Exercise } from "../../entities/exercise";
 import { Earning } from "../../entities/earning";
 import { ExerciseLevel } from "../../entities/exerciseLevel";
+import { WorkoutHistory } from "../../entities/workoutHistory";
 
 const adminRouter = require("express").Router();
 
@@ -11,6 +12,7 @@ const userRepo = getRepository(User);
 const exerciseRepo = getRepository(Exercise);
 const exerciseLevelRepo = getRepository(ExerciseLevel);
 const earningRepo = getRepository(Earning);
+const workoutHistoryRepo = getRepository(WorkoutHistory);
 
 // gift premium
 async function giftPremium(req): Promise<{ succes: boolean; message: string }> {
@@ -215,6 +217,22 @@ async function getEarnings(): Promise<Earning[]> {
 }
 adminRouter.get("/earnings", async (req, res) => {
   res.send(await getEarnings());
+});
+
+// Last workout finishes
+async function getLatestWorkoutFinishes(): Promise<WorkoutHistory[]> {
+  const history = await workoutHistoryRepo
+    .createQueryBuilder("wh")
+    .leftJoinAndSelect("wh.user", "user")
+    .leftJoinAndSelect("wh.workout", "workout")
+    .orderBy("wh.createdAt", "DESC")
+    .limit(20)
+    .getMany();
+
+  return history;
+}
+adminRouter.get("/latestworkoutfinishes", async (req, res) => {
+  res.send(await getLatestWorkoutFinishes());
 });
 
 module.exports = adminRouter;
