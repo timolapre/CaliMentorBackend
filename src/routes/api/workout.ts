@@ -213,7 +213,7 @@ workoutRouter.post("/id", isAuthenticated, async (req, res) => {
 });
 
 // create
-async function create(req): Promise<string> {
+export async function create(req): Promise<string> {
   const { body } = req;
   let workout = new Workout();
   workout = { ...body.workout };

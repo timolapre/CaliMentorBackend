@@ -3,6 +3,10 @@ import { isAdmin, isAuthenticated } from "../util/authentication";
 /* eslint-disable import/newline-after-import */
 const apiRouter = require("express").Router();
 
+apiRouter.get("/alive", async (req, res) => {
+  res.send("alive");
+});
+
 const user = require("./api/user");
 apiRouter.use("/user", user);
 
@@ -26,6 +30,9 @@ apiRouter.use("/creator", isAuthenticated, creator);
 
 const admin = require("./api/admin");
 apiRouter.use("/admin", isAdmin, admin);
+
+const ai = require("./api/ai");
+apiRouter.use("/ai", isAdmin, ai);
 
 const google = require("./api/google");
 apiRouter.use("/google", google);

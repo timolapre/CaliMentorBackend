@@ -15,21 +15,21 @@ const earningRepo = getRepository(Earning);
 const workoutHistoryRepo = getRepository(WorkoutHistory);
 
 // gift premium
-async function giftPremium(req): Promise<{ succes: boolean; message: string }> {
+async function giftPremium(req): Promise<{ success: boolean; message: string }> {
   const user = await userRepo.findOne({ username: req.body.username });
 
   if (!user) {
-    return { succes: false, message: "username not found" };
+    return { success: false, message: "username not found" };
   }
   if (user.type === "gifted_premium" || user.type === "premium") {
-    return { succes: false, message: "user already has premium" };
+    return { success: false, message: "user already has premium" };
   }
   user.type = "gifted_premium";
   const date = new Date();
   date.setMonth(date.getMonth() + req.body.months);
   user.premiumExpireDate = date;
   await userRepo.save(user);
-  return { succes: true, message: "Successfully gifted premium" };
+  return { success: true, message: "Successfully gifted premium" };
 }
 adminRouter.post("/premiumgift", async (req, res) => {
   res.send(await giftPremium(req));
@@ -86,24 +86,24 @@ adminRouter.get("/users/info", async (req, res) => {
 });
 
 // Add exercise
-async function addExercise(req): Promise<{ succes: boolean; message: string }> {
+async function addExercise(req): Promise<{ success: boolean; message: string }> {
   if (!req.body.name) {
     return {
-      succes: false,
+      success: false,
       message: "Can not create an exercise without a name",
     };
   }
 
   const exerciseCount = await exerciseRepo.findOne({ name: req.body.name });
   if (exerciseCount) {
-    return { succes: false, message: "Exercise already exists" };
+    return { success: false, message: "Exercise already exists" };
   }
 
   const exercise = new Exercise();
   exercise.name = req.body.name;
   exercise.approved = true;
   await exerciseRepo.save(exercise);
-  return { succes: true, message: "Successfully added exercise" };
+  return { success: true, message: "Successfully added exercise" };
 }
 adminRouter.post("/exercises/add", async (req, res) => {
   res.send(await addExercise(req));
