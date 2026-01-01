@@ -8,3 +8,6 @@ Microsoft store -> start Ubuntu
 
 DigitalOcean ubuntu path
 `/var/www`
+
+XAMPP
+start apache and MySQL
