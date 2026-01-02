@@ -65,6 +65,13 @@ const main = async () => {
   const app = express();
 
   require("dotenv").config();
+  
+  // Debug middleware - log all incoming requests
+  app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+  });
+  
   app.use(cookieParser());
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(bodyParser.json());
