@@ -110,8 +110,9 @@ const main = async () => {
 
   startCronJobs(connection);
 
-  app.listen(8080, () => {
-    console.log("Server started listening on localhost:8080");
+  const PORT = parseInt(process.env.PORT || "8080", 10);
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server started listening on 0.0.0.0:${PORT}`);
   });
 };
 
