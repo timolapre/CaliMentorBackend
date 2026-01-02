@@ -96,6 +96,15 @@ const main = async () => {
     })
   );
 
+  // Root route for health check
+  app.get("/", (req, res) => {
+    res.json({ 
+      status: "ok", 
+      message: "CaliMentor Backend API is running",
+      timestamp: new Date().toISOString() 
+    });
+  });
+
   const apiRouter = require("./routes/api");
   app.use("/api", apiRouter);
 
